@@ -58,12 +58,12 @@ namespace efatoora.service
             }
 
             var key = (await keyRepository.GetKeys()).First();
-            var privateKey= Encoding.UTF8.GetString(Convert.FromBase64String(key?.PrivateKey));
+            var privateKey = Encoding.UTF8.GetString(Convert.FromBase64String(key.PrivateKey));
             Enum.TryParse(key.Environment, out ZatcaEnvironment environment);
 
             var eInvoiceSignerResponse = new EInvoiceSigner(hashGenerator, digitalSignartureGenerator, qrGenerator,
                 DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"))
-                .SignDocument(xml, key?.BinaryToken, privateKey);
+                .SignDocument(xml, key.BinaryToken, privateKey);
 
             string invoiceHash = hashGenerator.Generate(xml);
             var referenceId = invoiceContract.ReferenceId = Guid.NewGuid();
@@ -82,8 +82,8 @@ namespace efatoora.service
             {
                 reportingResponse = _reportingInvoiceApiClient.ReportInvoice(new InvoiceReportingRequest(
                resultAPiCall,
-               key?.BinaryToken,
-               key?.Secret
+               key.BinaryToken,
+               key.Secret
                ));
             }
             catch (Exception ex)
@@ -94,5 +94,57 @@ namespace efatoora.service
             return reportingResponse;
 
         }
+
+        public async Task<InvoiceClearanceResponse> Clear(InvoiceContract invoiceContract)
+        {
+
+            Enum.TryParse(invoiceContract.InvoiceType, out InvoiceTypes invoiceType);
+            Enum.TryParse(invoiceContract.InvoiceTypeCode, out InvoiceTypeCodes invoiceTypeCode);
+
+            if (invoiceTypeCode != InvoiceTypeCodes.Standard)
+            {
+                throw new Exception("Invalid Document Type Code");
+            }
+
+            var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType);
+
+            var xmlBytes = _xmlGenerator.Generate(invoiceContract);
+
+            string generatedXML = Encoding.UTF8.GetString(xmlBytes);
+
+            XmlDocument xml = new XmlDocument()
+            {
+                PreserveWhitespace = true
+            };
+
+            IHashGenerator hashGenerator = new HashGenerator();
+            xml.LoadXml(generatedXML);
+            var key = (await keyRepository.GetKeys()).First();
+            Enum.TryParse(key.Environment, out ZatcaEnvironment environment);
+            var referenceId = invoiceContract.ReferenceId = Guid.NewGuid();
+
+            string invoiceHash = hashGenerator.Generate(xml);
+            var resultAPiCall = new
+            {
+                invoiceHash = invoiceHash,
+                uuid = referenceId,
+                invoice = Convert.ToBase64String(xmlBytes)
+            };
+            var zatcaUrl = zatcaUrlProviderService.GetUrls(environment);
+
+            IClearanceApiClient _standardInvoiceClearanceApiClient = new ClearanceApiClient(zatcaUrl);
+            InvoiceClearanceResponse clearanceResponse = null;
+            try
+            {
+                clearanceResponse = _standardInvoiceClearanceApiClient.ClearInvoice(new InvoiceClearanceRequest(resultAPiCall, key.BinaryToken, key.Secret));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+            return clearanceResponse;
+        }
+
     }
 }

@@ -66,5 +66,24 @@ namespace efatoora.Server.Controllers
             }
         }
 
+
+        [Route("/v1/Invoice/Clear")]
+        [HttpPost]
+
+        public ActionResult<InvoiceClearanceResponse> Clear(InvoiceContract data)
+        {
+            try
+            {
+                InvoiceContractValidator.IsInvoiceDetailsValid(data);
+                var invoiceServices = new InvoiceServices(keyRepository, zatcaUrlProviderService);
+                var result = invoiceServices.Clear(data);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
     }
 }
