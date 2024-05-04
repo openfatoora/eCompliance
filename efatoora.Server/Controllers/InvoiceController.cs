@@ -1,4 +1,5 @@
 ﻿using efatoora.Server.Enums;
+using efatoora.service;
 using efatoora.service.Data;
 using efatoora.service.Data.Entities;
 using efatoora.service.Services;
@@ -11,7 +12,7 @@ namespace efatoora.Server.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InvoiceController(ILogger<InvoiceController> logger, IInvoiceLogService invoiceLogService, IKeyRepository keyRepository ) : ControllerBase
+    public class InvoiceController(ILogger<InvoiceController> logger, IInvoiceLogService invoiceLogService, IKeyRepository keyRepository, IZatcaUrlProviderService zatcaUrlProviderService) : ControllerBase
     {
 
         [Route("Generate")]
@@ -46,5 +47,24 @@ namespace efatoora.Server.Controllers
 
 
         }
+
+        [Route("/v1/Invoice/Report")]
+        [HttpPost]
+
+        public ActionResult<InvoiceReportingResponse> Report(InvoiceContract data)
+        {
+            try
+            {
+                InvoiceContractValidator.IsInvoiceDetailsValid(data);
+                var invoiceServices = new InvoiceServices(keyRepository, zatcaUrlProviderService);
+                var result = invoiceServices.Report(data);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
     }
 }
