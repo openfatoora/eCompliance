@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Xml;
 using efatoora.service.Data;
+using efatoora.service.Migrations;
 using efatoora.service.Services;
 using ZatcaCore;
 using ZatcaCore.ApiClients;
@@ -57,11 +58,12 @@ namespace efatoora.service
             }
 
             var key = (await keyRepository.GetKeys()).First();
+            var privateKey= Encoding.UTF8.GetString(Convert.FromBase64String(key?.PrivateKey));
             Enum.TryParse(key.Environment, out ZatcaEnvironment environment);
 
             var eInvoiceSignerResponse = new EInvoiceSigner(hashGenerator, digitalSignartureGenerator, qrGenerator,
                 DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"))
-                .SignDocument(xml, key?.BinaryToken, key?.PrivateKey);
+                .SignDocument(xml, key?.BinaryToken, privateKey);
 
             string invoiceHash = hashGenerator.Generate(xml);
             var referenceId = invoiceContract.ReferenceId = Guid.NewGuid();
@@ -81,7 +83,7 @@ namespace efatoora.service
                 reportingResponse = _reportingInvoiceApiClient.ReportInvoice(new InvoiceReportingRequest(
                resultAPiCall,
                key?.BinaryToken,
-               key?.PrivateKey
+               key?.Secret
                ));
             }
             catch (Exception ex)

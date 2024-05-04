@@ -1,4 +1,5 @@
 ﻿using efatoora.service.Data;
+using efatoora.service.Migrations;
 using System.Text;
 using System.Xml;
 using ZatcaCore;
@@ -37,11 +38,10 @@ public class InvoiceGenerator(IKeyRepository keyRepository)
         IDigitalSignartureGenerator digitalSignartureGenerator = new DigitalSignartureGenerator();
 
         var key = (await keyRepository.GetKeys()).First();
-
+        var privateKey=Encoding.UTF8.GetString(Convert.FromBase64String((string)key?.PrivateKey));
         var eInvoiceSignerResponse = new EInvoiceSigner(hashGenerator, digitalSignartureGenerator, qrGenerator,
             DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"))
-            .SignDocument(xml, key.BinaryToken, key.PrivateKey);
-
+            .SignDocument(xml, key.BinaryToken, privateKey);
 
         eInvoiceSignerResponse.Xml = Convert.ToBase64String(Encoding.UTF8.GetBytes(eInvoiceSignerResponse.Xml));
         return eInvoiceSignerResponse;
