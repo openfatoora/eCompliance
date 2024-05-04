@@ -3,6 +3,7 @@ using System.Xml;
 using efatoora.service.Data;
 using efatoora.service.Migrations;
 using efatoora.service.Services;
+using Services.InvoiceService;
 using ZatcaCore;
 using ZatcaCore.ApiClients;
 using ZatcaCore.Contracts;
@@ -33,7 +34,7 @@ namespace efatoora.service
             {
                 throw new Exception("Invalid Document Type Code");
             }
-            var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType);
+            var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType, invoiceTypeCode == InvoiceTypeCodes.Standard);
 
             var xmlBytes = _xmlGenerator.Generate(invoiceContract);
             string generatedXML = Encoding.UTF8.GetString(xmlBytes);
@@ -106,7 +107,7 @@ namespace efatoora.service
                 throw new Exception("Invalid Document Type Code");
             }
 
-            var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType);
+            var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType, invoiceTypeCode == InvoiceTypeCodes.Standard);
 
             var xmlBytes = _xmlGenerator.Generate(invoiceContract);
 

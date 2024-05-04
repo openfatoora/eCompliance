@@ -1,5 +1,6 @@
 ﻿using efatoora.service.Data;
 using efatoora.service.Migrations;
+using Services.InvoiceService;
 using System.Text;
 using System.Xml;
 using ZatcaCore;
@@ -20,9 +21,7 @@ public class InvoiceGenerator(IKeyRepository keyRepository)
             throw new Exception("Invalid Document Type Code");
         }
 
-
-        var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType);
-
+        var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType, invoiceTypeCode == InvoiceTypeCodes.Standard);
 
         var xmlBytes = _xmlGenerator.Generate(invoiceContract);
         string generatedXML = Encoding.UTF8.GetString(xmlBytes);
@@ -38,7 +37,7 @@ public class InvoiceGenerator(IKeyRepository keyRepository)
         IDigitalSignartureGenerator digitalSignartureGenerator = new DigitalSignartureGenerator();
 
         var key = (await keyRepository.GetKeys()).First();
-        var privateKey=Encoding.UTF8.GetString(Convert.FromBase64String((string)key?.PrivateKey));
+        var privateKey = Encoding.UTF8.GetString(Convert.FromBase64String((string)key.PrivateKey));
         var eInvoiceSignerResponse = new EInvoiceSigner(hashGenerator, digitalSignartureGenerator, qrGenerator,
             DateTime.Now.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'"))
             .SignDocument(xml, key.BinaryToken, privateKey);
