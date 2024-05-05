@@ -108,7 +108,7 @@ namespace efatoora.service
             }
 
             var _xmlGenerator = XmlGeneratorFactory.GetXmlGenerator(invoiceType, invoiceTypeCode == InvoiceTypeCodes.Standard);
-
+            var referenceId = invoiceContract.ReferenceId = Guid.NewGuid();
             var xmlBytes = _xmlGenerator.Generate(invoiceContract);
 
             string generatedXML = Encoding.UTF8.GetString(xmlBytes);
@@ -122,7 +122,7 @@ namespace efatoora.service
             xml.LoadXml(generatedXML);
             var key = (await keyRepository.GetKeys()).First();
             Enum.TryParse(key.Environment, out ZatcaEnvironment environment);
-            var referenceId = invoiceContract.ReferenceId = Guid.NewGuid();
+            
 
             string invoiceHash = hashGenerator.Generate(xml);
             var resultAPiCall = new
