@@ -1,28 +1,43 @@
 ﻿using ZatcaCore.Contracts;
 using ZatcaCore.XmlGenerators;
 
-namespace efatoora.service.Services;
-
-public static class XmlGeneratorFactory
+namespace Services.InvoiceService
 {
-    public static IXmlGenerator GetXmlGenerator(InvoiceTypes invoiceType)
+    public static class XmlGeneratorFactory
     {
-        IXmlGenerator _xmlGenerator = null;
-
-        if (invoiceType == InvoiceTypes.TAX_INVOICE)
+        public static IXmlGenerator GetXmlGenerator(InvoiceTypes invoiceType, bool isStandard)
         {
-            _xmlGenerator = new SimplifiedInvoiceXmlGenerator();
-        }
-        else if (invoiceType == InvoiceTypes.CREDIT_NOTE)
-        {
-            _xmlGenerator = new SimplifiedCreditNoteXmlGenerator();
+            IXmlGenerator _xmlGenerator = null;
 
-        }
-        else if (invoiceType == InvoiceTypes.DEBIT_NOTE)
-        {
-            _xmlGenerator = new SimplifiedDebitNoteXmlGenerator();
+            if (isStandard && invoiceType == InvoiceTypes.TAX_INVOICE)
+            {
+                _xmlGenerator = new StandardInvoiceXmlGenerator();
+            }
+            else if (isStandard && invoiceType == InvoiceTypes.CREDIT_NOTE)
+            {
+                _xmlGenerator = new StandardCreditNoteXmlGenerator();
 
+            }
+            else if (isStandard && invoiceType == InvoiceTypes.DEBIT_NOTE)
+            {
+                _xmlGenerator = new StandardDebitNoteXmlGenerator();
+
+            }
+            else if (!isStandard && invoiceType == InvoiceTypes.TAX_INVOICE)
+            {
+                _xmlGenerator = new SimplifiedInvoiceXmlGenerator();
+            }
+            else if (!isStandard && invoiceType == InvoiceTypes.CREDIT_NOTE)
+            {
+                _xmlGenerator = new SimplifiedCreditNoteXmlGenerator();
+
+            }
+            else if (!isStandard && invoiceType == InvoiceTypes.DEBIT_NOTE)
+            {
+                _xmlGenerator = new SimplifiedDebitNoteXmlGenerator();
+
+            }
+            return _xmlGenerator;
         }
-        return _xmlGenerator;
     }
 }

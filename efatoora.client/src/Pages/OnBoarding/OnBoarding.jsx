@@ -8,8 +8,10 @@ import BusinessDetailsTab from "./BusinessDetailsTab";
 import Address from "./Address";
 import Compliance from "./Compliance";
 import Loader from "./Loader";
+import {useNavigate} from 'react-router-dom'
 
 export default function OnBoarding() {
+  const naviagate = useNavigate();
   const [otp, setOtp] = useState("000000");
   const [deviceName, setDeviceName] = useState("Unique Name");
   const [businessName, setBusinessName] = useState("Infinite");
@@ -61,6 +63,9 @@ export default function OnBoarding() {
       .then((response) => {
         setIsSubmitting(false);
         setIsSuccess(true);
+        const timeoutId = setTimeout(() => {
+          naviagate('/')
+        }, 1000);
       })
       .catch((error) => {
         setIsSubmitting(false);
