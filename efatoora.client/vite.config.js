@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import { defineConfig } from "vite";
 import plugin from "@vitejs/plugin-react";
 import fs from "fs";
@@ -12,33 +12,33 @@ const baseFolder =
     ? `${env.APPDATA}/ASP.NET/https`
     : `${env.HOME}/.aspnet/https`;
 
-const certificateName = "efatoora.client";
-const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
-const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
+// const certificateName = "efatoora.client";
+// const certFilePath = path.join(baseFolder, `${certificateName}.pem`);
+// const keyFilePath = path.join(baseFolder, `${certificateName}.key`);
 
-if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-  if (
-    0 !==
-    child_process.spawnSync(
-      "dotnet",
-      [
-        "dev-certs",
-        "https",
-        "--export-path",
-        certFilePath,
-        "--format",
-        "Pem",
-        "--no-password",
-      ],
-      { stdio: "inherit" }
-    ).status
-  ) {
-    throw new Error("Could not create certificate.");
-  }
-}
+// if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+//   if (
+//     0 !==
+//     child_process.spawnSync(
+//       "dotnet",
+//       [
+//         "dev-certs",
+//         "https",
+//         "--export-path",
+//         certFilePath,
+//         "--format",
+//         "Pem",
+//         "--no-password",
+//       ],
+//       { stdio: "inherit" }
+//     ).status
+//   ) {
+//     throw new Error("Could not create certificate.");
+//   }
+// }
 
 export default defineConfig({
-  plugins: [plugin()],
+  plugins: [plugin(),basicSsl()],
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -84,9 +84,9 @@ export default defineConfig({
       },
     },
     port: 5173,
-    https: {
-      key: fs.readFileSync(keyFilePath),
-      cert: fs.readFileSync(certFilePath),
-    },
+    // https: {
+    //   key: fs.readFileSync(keyFilePath),
+    //   cert: fs.readFileSync(certFilePath),
+    // },
   },
 });

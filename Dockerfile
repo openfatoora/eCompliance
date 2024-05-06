@@ -1,50 +1,42 @@
-# Stage 1: Build the React app
-FROM node:14 AS build-client
-WORKDIR /src/efatoora.client
+# Stage 1: Build React + Vite frontend
+FROM node:20 AS frontend-build
 
-# Copy the client app files
-COPY ["efatoora.client/package.json", "efatoora.client/package-lock.json", "./"]
-COPY ["efatoora.client/", "./"]
-
-# Install dependencies and build
-RUN yarn run build
-
-# Stage 2: Build and publish the .NET application
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-
-# Copy the project files
-COPY ["efatoora.Server/efatoora.Server.csproj", "efatoora.Server/"]
-COPY ["efatoora.service/ZatcaCore/ZatcaCore.dll", "ZatcaCore/"]
-
-# Restore dependencies
-RUN dotnet restore "efatoora.Server/efatoora.Server.csproj"
-COPY . .
-
-# Set the working directory for subsequent commands
-WORKDIR "/src/efatoora.Server"
-
-# Publish the application
-RUN dotnet publish "efatoora.Server.csproj" -c Release -o /app/publish
-
-# Stage 3: Create the runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-# Expose port 80
-EXPOSE 80
+# Copy frontend dependencies
+COPY efatoora.client/package.json efatoora.client/yarn.lock ./
+RUN yarn install
 
-# Install and configure SSH (if required)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends openssh-server \
-    && mkdir -p /run/sshd \
-    && echo "root:Docker!" | chpasswd
+# Copy and build the frontend application
+COPY efatoora.client .
+RUN yarn build
 
-# Copy the published .NET application
-COPY --from=build /app/publish .
+# Stage 2: Build .NET backend
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
 
-# Copy the built React app
-COPY --from=build-client /app/dist ./efatoora.client/build
+WORKDIR /app
 
-# Start SSH and the application (if required)
-ENTRYPOINT ["/bin/bash", "-c", "/usr/sbin/sshd && dotnet efatoora.Server.dll"]
+# Copy and restore backend dependencies
+COPY efatoora.Server/efatoora.Server.csproj efatoora.Server/
+COPY efatoora.service/efatoora.service.csproj efatoora.service/
+RUN dotnet restore efatoora.Server/efatoora.Server.csproj
+
+# Copy the rest of the backend code
+COPY efatoora.Server efatoora.Server
+COPY efatoora.service efatoora.service
+
+# Publish the backend application
+RUN dotnet publish efatoora.Server/efatoora.Server.csproj -c Release -o /app/publish
+
+# Stage 3: Final image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 5173
+
+# Copy built frontend and published backend into final image
+COPY --from=frontend-build /app/dist wwwroot/
+COPY --from=backend-build /app/publish .
+
+ENTRYPOINT ["dotnet", "efatoora.Server.dll"]
