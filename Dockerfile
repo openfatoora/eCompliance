@@ -6,10 +6,11 @@ WORKDIR /app
 # Copy frontend dependencies
 COPY efatoora.client/package.json efatoora.client/yarn.lock ./
 RUN yarn install
-
+RUN yarn add date-fns
 # Copy and build the frontend application
 COPY efatoora.client .
 RUN yarn build
+
 
 # Stage 2: Build .NET backend
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS backend-build
