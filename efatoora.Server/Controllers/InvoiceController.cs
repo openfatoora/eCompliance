@@ -15,7 +15,7 @@ namespace efatoora.Server.Controllers
     public class InvoiceController(ILogger<InvoiceController> logger, IInvoiceLogService invoiceLogService, IKeyRepository keyRepository, IZatcaUrlProviderService zatcaUrlProviderService) : ControllerBase
     {
 
-        [Route("Generate")]
+        [Route("/v1/Invoice/GenerateOffline")]
         [HttpPost]
         public async Task<ActionResult<EInvoiceSignerResponse>> GenerateInvoiceAsync([FromBody] InvoiceContract invoiceContract)
         {
