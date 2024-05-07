@@ -141,7 +141,7 @@ function DashBoard() {
               className="btn btn-primary"
               onClick={() => window.alert("Coming soon")}
             >
-              Reniew
+              Renew
             </button>
           </Card.Footer>
         </Card>

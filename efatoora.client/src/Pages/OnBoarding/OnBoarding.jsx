@@ -1,4 +1,3 @@
-import React from "react";
 import axios from "axios";
 import { useState } from "react";
 import { Card, Button, Alert } from "react-bootstrap";
@@ -14,19 +13,19 @@ export default function OnBoarding() {
   const naviagate = useNavigate();
   const [otp, setOtp] = useState("000000");
   const [deviceName, setDeviceName] = useState("Unique Name");
-  const [businessName, setBusinessName] = useState("Infinite");
+  const [businessName, setBusinessName] = useState("Summit");
   const [countryCode, setCountryCode] = useState("SA");
   const [supportedInvoiceTypes, setInvoiceTypes] = useState("0100");
   const [streetName, setStreetName] = useState("street name");
   const [additionalNo, setAdditionalNo] = useState("1234");
   const [buildingNumber, setBuildingNumber] = useState("1234");
-  const [city, setCity] = useState("Riyadh");
+  const [city, setCity] = useState("Dubai");
   const [industry, setIndustry] = useState("Software");
   const [additionalIdType, setAdditionalIdType] = useState("OTH");
   const [additionalIdNumber, setAdditionalIdNumber] = useState("1234");
-  const [vat, setVat] = useState("310175397400003");
-  const [groupVatNumber, setGroupVatNumber] = useState("310175397400003");
-  const [state, setState] = useState("Riyadh");
+  const [vat, setVat] = useState("399999999900003");
+  const [groupVatNumber, setGroupVatNumber] = useState("399999999900003");
+  const [state, setState] = useState("Dubai");
   const [zipCode, setZipCode] = useState("12345");
   const [district, setDistrict] = useState("fgffA");
   const [environment, setEnvironment] = useState("SandBox");
@@ -60,14 +59,14 @@ export default function OnBoarding() {
 
     axios
       .post("/onboard", formData)
-      .then((response) => {
+      .then(() => {
         setIsSubmitting(false);
         setIsSuccess(true);
-        const timeoutId = setTimeout(() => {
+        setTimeout(() => {
           naviagate('/')
         }, 1000);
       })
-      .catch((error) => {
+      .catch(() => {
         setIsSubmitting(false);
         setIsError(true);
       });
